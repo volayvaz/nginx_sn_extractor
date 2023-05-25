@@ -36,13 +36,16 @@ func main() {
 
 func extractOptionValue(ln, option string, inOpt bool, ns map[string]int) bool {
 	if !strings.HasPrefix(strings.TrimLeft(ln, " \t"), "#") {
-		s := strings.Fields(ln)
+		sub := fmt.Sprint(strings.Split(ln, "#")[0])
+		s := strings.Fields(sub)
 		for _, v := range s {
 			if inOpt {
+
 				if v[len(v)-1:] == ";" {
 					v = v[:len(v)-1]
 					inOpt = false
 				}
+
 				if len(v) > 0 {
 					ns[v] = ns[v] + 1
 				}
