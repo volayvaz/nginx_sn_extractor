@@ -12,7 +12,7 @@ var ()
 
 func main() {
 
-	names := make(map[string]int)
+	names := make(map[string][]string)
 
 	f, err := os.Open("nginx.cfg")
 	check(err)
@@ -21,7 +21,7 @@ func main() {
 	for scanner.Scan() {
 		inOpt = extractOptionValue(scanner.Text(), "server_name", inOpt, names)
 	}
-	fmt.Printf("Domain,Number of Occurrences\n")
+	//fmt.Printf("Domain,Number of Occurrences\n")
 	keys := make([]string, 0, len(names))
 
 	for k, _ := range names {
@@ -29,12 +29,15 @@ func main() {
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		fmt.Printf("%v,%v\n", k, names[k])
+		fmt.Printf("%v\n", k)
+		for v := range names[k] {
+			fmt.Printf("\t\t%v\n", names[k][v])
+		}
 
 	}
 }
 
-func extractOptionValue(ln, option string, inOpt bool, ns map[string]int) bool {
+func extractOptionValue(ln, option string, inOpt bool, ns map[string][]string) bool {
 	if !strings.HasPrefix(strings.TrimLeft(ln, " \t"), "#") {
 		sub := fmt.Sprint(strings.Split(ln, "#")[0])
 		s := strings.Fields(sub)
@@ -47,7 +50,22 @@ func extractOptionValue(ln, option string, inOpt bool, ns map[string]int) bool {
 				}
 
 				if len(v) > 0 {
-					ns[v] = ns[v] + 1
+					sld := ""
+					subs := strings.Split(v, ".")
+					if len(subs) > 1 {
+						sld = strings.Join(subs[len(subs)-2:], ".")
+					} else {
+						sld = strings.Join(subs, ".")
+					}
+					isSeen := false
+					for j := range ns[sld] {
+						if ns[sld][j] == v {
+							isSeen = true
+						}
+					}
+					if !isSeen {
+						ns[sld] = append(ns[sld], v)
+					}
 				}
 			}
 			if v == option {
